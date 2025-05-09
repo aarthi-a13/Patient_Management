@@ -1,0 +1,10 @@
+Always use records instead of classes
+Always use Lombok annotations where possible
+Always use Spring REST client from Spring boot 3.2 instead of REST template
+Use @RequiredArgsConstructor for dependency injection where possible
+Always follow centeralized exception handling using @ControllerAdvice
+Use @Log4j2 from lombok for logging
+A method or function can't have more than 7 arguments
+A method or function can't have more than 10 conditional blocks
+Use builder pattern for complex objects
+Always crete java docs for methods & classes as created
