@@ -1,13 +1,14 @@
 package com.healthcare.app.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 
 @Entity
