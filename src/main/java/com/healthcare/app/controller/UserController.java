@@ -2,6 +2,8 @@ package com.healthcare.app.controller;
 
 import com.healthcare.app.model.User;
 import com.healthcare.app.service.UserService;
+import com.healthcare.app.service.KafkaProducerService;
+import com.healthcare.app.model.UserEvent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,6 +29,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final KafkaProducerService kafkaProducerService;
 
     /**
      * GET /api/v1/users : Get all users
@@ -85,6 +88,13 @@ public class UserController {
             @RequestBody User user) {
         log.info("REST request to save User : {}", user);
         User result = userService.createUser(user);
+        if (result != null) {
+            try {
+                kafkaProducerService.sendUserEvent(new UserEvent("USER_CREATED", result));
+            } catch (Exception e) {
+                log.error("Failed to send Kafka notification for USER_CREATED event for user ID: {}. Error: {}", result.id(), e.getMessage(), e);
+            }
+        }
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
@@ -112,6 +122,13 @@ public class UserController {
             @RequestBody User user) {
         log.info("REST request to update User : {}, {}", id, user);
         User result = userService.updateUser(id, user);
+        if (result != null) {
+            try {
+                kafkaProducerService.sendUserEvent(new UserEvent("USER_UPDATED", result));
+            } catch (Exception e) {
+                log.error("Failed to send Kafka notification for USER_UPDATED event for user ID: {}. Error: {}", result.id(), e.getMessage(), e);
+            }
+        }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -131,7 +148,25 @@ public class UserController {
             @Parameter(description = "ID of user to be deleted", required = true) 
             @PathVariable Long id) {
         log.info("REST request to delete User : {}", id);
+        User userDetailsForEvent = null;
+        try {
+            userDetailsForEvent = userService.getUserById(id);
+        } catch (Exception e) {
+            log.warn("Could not fetch details for User ID {} before deletion. Kafka event may lack full data. Error: {}", id, e.getMessage());
+        }
+
         userService.deleteUser(id);
+
+        if (userDetailsForEvent != null) {
+            try {
+                kafkaProducerService.sendUserEvent(new UserEvent("USER_DELETED", userDetailsForEvent));
+                log.info("Sent USER_DELETED Kafka event for user ID: {}", userDetailsForEvent.id());
+            } catch (Exception e) {
+                log.error("Failed to send USER_DELETED Kafka event for user ID: {}. Error: {}", userDetailsForEvent.id(), e.getMessage(), e);
+            }
+        } else {
+            log.info("Skipping USER_DELETED Kafka event for User ID {} as details could not be fetched.", id);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
