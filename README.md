@@ -63,15 +63,6 @@ src/main/java/com/healthcare/app/
 - **PUT /api/v1/users/{id}**: Update a user via JSONPlaceholder
 - **DELETE /api/v1/users/{id}**: Delete a user via JSONPlaceholder
 
-## Key Implementation Details
-
-- **Java Records**: Used for immutable data models (User)
-- **Lombok Annotations**: Reduce boilerplate code
-- **Caching**: Implemented for JSONPlaceholder API calls to improve performance
-- **Exception Handling**: Centralized with @ControllerAdvice
-- **API Documentation**: Using Springdoc OpenAPI
-- **Constructor Injection**: Using Lombok's @RequiredArgsConstructor
-
 ## Running the Application
 
 ```sh
