@@ -2,6 +2,7 @@
 
 A comprehensive Spring Boot application providing REST APIs for healthcare management and user data. The application
 includes secure endpoints for patient management and public endpoints for user data retrieved from JSONPlaceholder.
+It also integrates with the Healthcare Utility library for event processing and audit logging.
 
 ## Tech Stack
 
@@ -14,6 +15,8 @@ includes secure endpoints for patient management and public endpoints for user d
 - **Lombok**: For reducing boilerplate code
 - **Springdoc OpenAPI 2.5.0**: For API documentation
 - **PostgreSQL**: For database (configured in production)
+- **Healthcare Utility Library**: For event processing and audit logging
+- **Apache Kafka**: For event-driven architecture
 
 ## Project Structure
 
@@ -151,3 +154,33 @@ The application implements caching for the JSONPlaceholder API calls:
 - **POST/PUT/DELETE requests**: Invalidate or update the cache as appropriate
 
 This improves performance significantly since the JSONPlaceholder data is static.
+
+## Healthcare Utility Integration
+
+This application integrates with the Healthcare Utility library to provide event processing and audit logging capabilities:
+
+### Event Processing
+
+- **User Events**: The application sends user-related events (CREATED, UPDATED, DELETED) to Kafka using the EventProducerService from the utility library
+- **Event Mapping**: The application maps its User model to the utility library's User model using utility methods
+- **Audit Trail**: All user operations are automatically logged to the audit system via the Kafka consumer in the utility library
+
+### Benefits of Integration
+
+- **Centralized Audit Logging**: All user activities are automatically captured in a centralized audit system
+- **Event-Driven Architecture**: Enables other services to react to user-related events
+- **Separation of Concerns**: Core business logic is separated from cross-cutting concerns like auditing
+
+### Configuration
+
+To enable the Healthcare Utility integration, ensure the following configuration is in your application.properties or application.yml:
+
+```properties
+# Kafka Configuration for Healthcare Utility
+spring.kafka.producer.bootstrap-servers=localhost:9092
+spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+spring.kafka.producer.value-serializer=org.springframework.kafka.support.serializer.JsonSerializer
+
+# Topic Configuration
+user.event.topic=user-topic
+```
