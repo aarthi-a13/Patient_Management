@@ -5,10 +5,10 @@ package com.healthcare.app.model;
  * This record carries the event type and the user data associated with the event.
  *
  * @param eventType The type of event (e.g., CREATED, UPDATED, DELETED).
- * @param userData The user data associated with the event.
+ * @param userData  The user data associated with the event.
  */
 public record UserEvent(
-    String eventType,
-    User userData
+        String eventType,
+        User userData
 ) {
 }

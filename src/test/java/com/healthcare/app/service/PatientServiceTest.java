@@ -95,7 +95,7 @@ class PatientServiceTest {
         patient2.setFirstName("Jane");
         patient2.setLastName("Smith");
         patient2.setDateOfBirth(LocalDate.of(1985, 5, 15));
-        
+
         List<Patient> patientList = Arrays.asList(testPatient, patient2);
         when(patientRepository.findAll()).thenReturn(patientList);
 

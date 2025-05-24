@@ -24,14 +24,14 @@ import java.util.List;
 public class UserService {
 
     private final RestClient restClient;
-    
+
     @Value("${jsonplaceholder.api.url:https://jsonplaceholder.typicode.com}")
     private String apiUrl;
 
     /**
      * Retrieves all users from the JSONPlaceholder API.
      * Results are cached to avoid redundant API calls for static data.
-     * 
+     *
      * @return a list of all users
      */
     @Cacheable(value = "users")
@@ -50,7 +50,7 @@ public class UserService {
     /**
      * Retrieves a user by ID from the JSONPlaceholder API.
      * Results are cached by user ID to avoid redundant API calls for static data.
-     * 
+     *
      * @param id the ID of the user to retrieve
      * @return the user with the specified ID
      * @throws EntityNotFoundException if no user is found with the specified ID
@@ -62,10 +62,10 @@ public class UserService {
                 .uri(apiUrl + "/users/{id}", id)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .onStatus(status -> status.value() == 404, 
-                    (request, response) -> {
-                        throw new EntityNotFoundException("User not found with id: " + id);
-                    })
+                .onStatus(status -> status.value() == 404,
+                        (request, response) -> {
+                            throw new EntityNotFoundException("User not found with id: " + id);
+                        })
                 .body(User.class);
         log.info("Successfully retrieved user with ID: {} from JSONPlaceholder API", id);
         return user;
@@ -74,7 +74,7 @@ public class UserService {
     /**
      * Creates a new user via the JSONPlaceholder API.
      * Evicts the users cache to ensure consistency.
-     * 
+     *
      * @param user the user to create
      * @return the created user
      */
@@ -95,8 +95,8 @@ public class UserService {
     /**
      * Updates an existing user via the JSONPlaceholder API.
      * Updates the cache for the specific user and evicts the users cache.
-     * 
-     * @param id the ID of the user to update
+     *
+     * @param id   the ID of the user to update
      * @param user the updated user data
      * @return the updated user
      * @throws EntityNotFoundException if no user is found with the specified ID
@@ -107,7 +107,7 @@ public class UserService {
         log.info("Updating user with ID: {} via JSONPlaceholder API", id);
         // First check if the user exists - this will use the cache if available
         getUserById(id);
-        
+
         User updatedUser = restClient.put()
                 .uri(apiUrl + "/users/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +121,7 @@ public class UserService {
     /**
      * Deletes a user by ID via the JSONPlaceholder API.
      * Evicts the user from both caches to maintain consistency.
-     * 
+     *
      * @param id the ID of the user to delete
      * @throws EntityNotFoundException if no user is found with the specified ID
      */
@@ -130,7 +130,7 @@ public class UserService {
         log.info("Deleting user with ID: {} via JSONPlaceholder API", id);
         // First check if the user exists - this will use the cache if available
         getUserById(id);
-        
+
         restClient.delete()
                 .uri(apiUrl + "/users/{id}", id)
                 .retrieve()

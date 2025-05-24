@@ -51,7 +51,7 @@ public class PatientService {
 
     public void deletePatient(Long id) {
         log.info("Deleting patient with ID: {}", id);
-        if(patientRepository.existsById(id))
+        if (patientRepository.existsById(id))
             patientRepository.deleteById(id);
     }
 }

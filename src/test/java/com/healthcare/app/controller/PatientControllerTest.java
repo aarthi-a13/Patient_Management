@@ -63,13 +63,13 @@ class PatientControllerTest {
         patient2.setFirstName("Jane");
         patient2.setLastName("Smith");
         patient2.setDateOfBirth(LocalDate.of(1985, 5, 15));
-        
+
         List<Patient> patientList = Arrays.asList(testPatient, patient2);
         when(patientService.getAllPatients()).thenReturn(patientList);
 
         // Act & Assert
         mockMvc.perform(get("/api/v1/patients")
-                .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
+                        .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -89,7 +89,7 @@ class PatientControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/api/v1/patients/1")
-                .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
+                        .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -107,7 +107,7 @@ class PatientControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/api/v1/patients/99")
-                .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
+                        .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
                 .andExpect(status().isNotFound());
 
         verify(patientService, times(1)).getPatientById(99L);
@@ -121,9 +121,9 @@ class PatientControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/patients")
-                .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testPatient)))
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(testPatient)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -149,9 +149,9 @@ class PatientControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/api/v1/patients/1")
-                .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedPatient)))
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedPatient)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -170,9 +170,9 @@ class PatientControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/api/v1/patients/99")
-                .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testPatient)))
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(testPatient)))
                 .andExpect(status().isNotFound());
 
         verify(patientService, times(1)).updatePatient(eq(99L), any(Patient.class));
@@ -186,7 +186,7 @@ class PatientControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete("/api/v1/patients/1")
-                .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN")))
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin").roles("ADMIN")))
                 .andExpect(status().isNoContent());
 
         verify(patientService, times(1)).deletePatient(1L);
@@ -197,9 +197,9 @@ class PatientControllerTest {
     void updatePatientWithInsufficientPrivileges() throws Exception {
         // Act & Assert
         mockMvc.perform(put("/api/v1/patients/1")
-                .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testPatient)))
+                        .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(testPatient)))
                 .andExpect(status().isForbidden());
 
         verify(patientService, never()).updatePatient(anyLong(), any(Patient.class));
@@ -210,7 +210,7 @@ class PatientControllerTest {
     void deletePatientWithInsufficientPrivileges() throws Exception {
         // Act & Assert
         mockMvc.perform(delete("/api/v1/patients/1")
-                .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
+                        .with(SecurityMockMvcRequestPostProcessors.user("user").roles("USER")))
                 .andExpect(status().isForbidden());
 
         verify(patientService, never()).deletePatient(anyLong());

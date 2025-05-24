@@ -1,9 +1,9 @@
 package com.healthcare.app.controller;
 
+import com.health.util.kafka.producer.EventProducerService;
 import com.healthcare.app.model.User;
 import com.healthcare.app.service.UserService;
-import com.healthcare.app.service.KafkaProducerService;
-import com.healthcare.app.model.UserEvent;
+import com.healthcare.app.util.Util;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +22,7 @@ import java.util.List;
  * REST controller for managing User resources.
  * This controller provides CRUD operations for users via the JSONPlaceholder API.
  */
+
 @RestController
 @RequestMapping("/api/v1/users")
 @Log4j2
@@ -29,16 +30,16 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final KafkaProducerService kafkaProducerService;
+    private final EventProducerService eventProducerService;
 
     /**
      * GET /api/v1/users : Get all users
-     * 
+     *
      * @return the ResponseEntity with status 200 (OK) and the list of users in the body
      */
     @Operation(summary = "Get all users", description = "Retrieve a list of all users from JSONPlaceholder.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation", 
+            @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))
     })
     @GetMapping
@@ -50,19 +51,19 @@ public class UserController {
 
     /**
      * GET /api/v1/users/{id} : Get user by id
-     * 
+     *
      * @param id the id of the user to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the user, or with status 404 (Not Found)
      */
     @Operation(summary = "Get a user by ID", description = "Retrieve a user by their unique ID from JSONPlaceholder.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation", 
+            @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(
-            @Parameter(description = "ID of user to be retrieved", required = true) 
+            @Parameter(description = "ID of user to be retrieved", required = true)
             @PathVariable Long id) {
         log.info("REST request to get User : {}", id);
         User user = userService.getUserById(id);
@@ -71,102 +72,99 @@ public class UserController {
 
     /**
      * POST /api/v1/users : Create a new user
-     * 
+     *
      * @param user the user to create
      * @return the ResponseEntity with status 201 (Created) and with body the new user
      */
     @Operation(summary = "Create a new user", description = "Add a new user via JSONPlaceholder API.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User created successfully", 
+            @ApiResponse(responseCode = "201", description = "User created successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid input")
     })
     @PostMapping
     public ResponseEntity<User> createUser(
-            @Parameter(description = "User object to be created", required = true, 
-                    schema = @Schema(implementation = User.class)) 
+            @Parameter(description = "User object to be created", required = true,
+                    schema = @Schema(implementation = User.class))
             @RequestBody User user) {
         log.info("REST request to save User : {}", user);
         User result = userService.createUser(user);
-        if (result != null) {
-            try {
-                kafkaProducerService.sendUserEvent(new UserEvent("USER_CREATED", result));
-            } catch (Exception e) {
-                log.error("Failed to send Kafka notification for USER_CREATED event for user ID: {}. Error: {}", result.id(), e.getMessage(), e);
-            }
+
+        // Send Kafka event for user creation
+        try {
+            log.info("Sending user creation event to Kafka for user ID: {}", result.id());
+            eventProducerService.sendUserEvent(Util.createUserEvent("CREATED", result));
+        } catch (Exception e) {
+            log.error("Failed to send user creation event to Kafka for user ID: {}", result.id(), e);
+            // We don't want to fail the API call if Kafka event sending fails
         }
+
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     /**
      * PUT /api/v1/users/{id} : Updates an existing user
-     * 
-     * @param id the id of the user to update
+     *
+     * @param id   the id of the user to update
      * @param user the user to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated user,
      * or with status 404 (Not Found) if the user is not found
      */
     @Operation(summary = "Update an existing user", description = "Update an existing user's information via JSONPlaceholder API.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User updated successfully", 
+            @ApiResponse(responseCode = "200", description = "User updated successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid input")
     })
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
-            @Parameter(description = "ID of user to be updated", required = true) 
+            @Parameter(description = "ID of user to be updated", required = true)
             @PathVariable Long id,
-            @Parameter(description = "Updated user object", required = true, 
-                    schema = @Schema(implementation = User.class)) 
+            @Parameter(description = "Updated user object", required = true,
+                    schema = @Schema(implementation = User.class))
             @RequestBody User user) {
         log.info("REST request to update User : {}, {}", id, user);
         User result = userService.updateUser(id, user);
-        if (result != null) {
-            try {
-                kafkaProducerService.sendUserEvent(new UserEvent("USER_UPDATED", result));
-            } catch (Exception e) {
-                log.error("Failed to send Kafka notification for USER_UPDATED event for user ID: {}. Error: {}", result.id(), e.getMessage(), e);
-            }
+
+        // Send Kafka event for user update
+        try {
+            log.info("Sending user update event to Kafka for user ID: {}", result.id());
+            eventProducerService.sendUserEvent(Util.createUserEvent("UPDATED", result));
+        } catch (Exception e) {
+            log.error("Failed to send user update event to Kafka for user ID: {}", result.id(), e);
+            // We don't want to fail the API call if Kafka event sending fails
         }
+
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    /**
-     * DELETE /api/v1/users/{id} : Delete a user
-     * 
-     * @param id the id of the user to delete
-     * @return the ResponseEntity with status 204 (NO_CONTENT)
-     */
-    @Operation(summary = "Delete a user", description = "Delete a user from the system via JSONPlaceholder API.")
+    @Operation(summary = "Delete a user", description = "Delete a user by their ID via JSONPlaceholder API.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
-            @Parameter(description = "ID of user to be deleted", required = true) 
+            @Parameter(description = "ID of user to be deleted", required = true)
             @PathVariable Long id) {
         log.info("REST request to delete User : {}", id);
-        User userDetailsForEvent = null;
-        try {
-            userDetailsForEvent = userService.getUserById(id);
-        } catch (Exception e) {
-            log.warn("Could not fetch details for User ID {} before deletion. Kafka event may lack full data. Error: {}", id, e.getMessage());
-        }
+
+        // Get the user before deletion to have data for the event
+        User user = userService.getUserById(id);
 
         userService.deleteUser(id);
 
-        if (userDetailsForEvent != null) {
-            try {
-                kafkaProducerService.sendUserEvent(new UserEvent("USER_DELETED", userDetailsForEvent));
-                log.info("Sent USER_DELETED Kafka event for user ID: {}", userDetailsForEvent.id());
-            } catch (Exception e) {
-                log.error("Failed to send USER_DELETED Kafka event for user ID: {}. Error: {}", userDetailsForEvent.id(), e.getMessage(), e);
-            }
-        } else {
-            log.info("Skipping USER_DELETED Kafka event for User ID {} as details could not be fetched.", id);
+        // Send Kafka event for user deletion
+        try {
+            log.info("Sending user deletion event to Kafka for user ID: {}", id);
+            eventProducerService.sendUserEvent(Util.createUserEvent("DELETED", user));
+        } catch (Exception e) {
+            log.error("Failed to send user deletion event to Kafka for user ID: {}", id, e);
+            // We don't want to fail the API call if Kafka event sending fails
         }
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 }

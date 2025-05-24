@@ -34,42 +34,42 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("Illegal argument: {}", ex.getMessage());
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
-    
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorDetails> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "Access Denied: You do not have permission to perform this action.", request.getDescription(false));
         log.warn("Access Denied: {} on resource {}", ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
     }
-    
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorDetails> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
         log.warn("Entity not found: {}", ex.getMessage());
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
-    
+
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<ErrorDetails> handleHttpClientErrorException(HttpClientErrorException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "API Error: " + ex.getMessage(), request.getDescription(false));
         log.warn("HTTP Client error: {}", ex.getMessage());
         return new ResponseEntity<>(errorDetails, ex.getStatusCode());
     }
-    
+
     @ExceptionHandler(ResourceAccessException.class)
     public ResponseEntity<ErrorDetails> handleResourceAccessException(ResourceAccessException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "Unable to access external API: " + ex.getMessage(), request.getDescription(false));
         log.error("Resource access error: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorDetails, HttpStatus.SERVICE_UNAVAILABLE);
     }
-    
+
     @ExceptionHandler(ConnectException.class)
     public ResponseEntity<ErrorDetails> handleConnectException(ConnectException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "Connection error: Unable to connect to external API", request.getDescription(false));
         log.error("Connection error: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorDetails, HttpStatus.SERVICE_UNAVAILABLE);
     }
-    
+
     @ExceptionHandler(RestClientException.class)
     public ResponseEntity<ErrorDetails> handleRestClientException(RestClientException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "API client error: " + ex.getMessage(), request.getDescription(false));

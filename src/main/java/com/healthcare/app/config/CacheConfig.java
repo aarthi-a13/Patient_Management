@@ -21,7 +21,7 @@ public class CacheConfig {
 
     /**
      * Creates a cache manager with predefined caches for the application.
-     * 
+     *
      * @return the configured cache manager
      */
     @Bean

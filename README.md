@@ -1,6 +1,7 @@
 # Healthcare Application API
 
-A comprehensive Spring Boot application providing REST APIs for healthcare management and user data. The application includes secure endpoints for patient management and public endpoints for user data retrieved from JSONPlaceholder.
+A comprehensive Spring Boot application providing REST APIs for healthcare management and user data. The application
+includes secure endpoints for patient management and public endpoints for user data retrieved from JSONPlaceholder.
 
 ## Tech Stack
 
@@ -97,16 +98,19 @@ http://localhost:8080/swagger-ui.html
 ### Using cURL
 
 #### Get all users
+
 ```sh
 curl -X GET http://localhost:8080/api/v1/users
 ```
 
 #### Get user by ID
+
 ```sh
 curl -X GET http://localhost:8080/api/v1/users/1
 ```
 
 #### Create a new user
+
 ```sh
 curl -X POST http://localhost:8080/api/v1/users \
   -H "Content-Type: application/json" \
@@ -120,6 +124,7 @@ curl -X POST http://localhost:8080/api/v1/users \
 ```
 
 #### Update a user
+
 ```sh
 curl -X PUT http://localhost:8080/api/v1/users/1 \
   -H "Content-Type: application/json" \
@@ -133,6 +138,7 @@ curl -X PUT http://localhost:8080/api/v1/users/1 \
 ```
 
 #### Delete a user
+
 ```sh
 curl -X DELETE http://localhost:8080/api/v1/users/1
 ```

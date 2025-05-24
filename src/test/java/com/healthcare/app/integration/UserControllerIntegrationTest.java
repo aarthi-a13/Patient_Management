@@ -8,6 +8,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -25,8 +26,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-    "jsonplaceholder.api.url=http://localhost:8082"
+        "jsonplaceholder.api.url=http://localhost:8082"
 })
+@Import(com.healthcare.app.config.TestConfig.class)
 class UserControllerIntegrationTest {
 
     private static WireMockServer wireMockServer;
@@ -74,7 +76,7 @@ class UserControllerIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users")
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -122,7 +124,7 @@ class UserControllerIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users/1")
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -148,7 +150,7 @@ class UserControllerIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users/999")
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
         // Verify the request was made to the external API
@@ -196,9 +198,9 @@ class UserControllerIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(newUser))
-                .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newUser))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(11)))
@@ -258,9 +260,9 @@ class UserControllerIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/users/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedUser))
-                .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedUser))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -293,7 +295,7 @@ class UserControllerIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/users/1")
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
         // Verify the requests were made to the external API
